@@ -1,32 +1,47 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <router-view class="view"></router-view>
+    <tabbar></tabbar>
   </div>
 </template>
 
+<script>
+import Tabbar from '../src/components/Tabbar'
+export default {
+  components: {
+    Tabbar
+  }
+  
+}
+</script>
+
 <style lang="less">
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+
+}
+body, html {
+    height: 100%;
+    width: 100%;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  width: 100%;
+  height: 100%;
+  // border: 1px solid black;
 }
 
-#nav {
-  padding: 30px;
+.view {
+  height: calc(100% - 44px);
+    // border: 1px solid black;
+    // background-color: chocolate;
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
 }
 </style>
