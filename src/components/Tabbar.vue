@@ -1,11 +1,31 @@
 <template>
-  <div class="tabbar">
-    <div class="item" v-for="item in tabbar" :key="item.path" @click="Routeto(item.path)">
-      <img v-if="item.active" src="../assets/activecredits.png" alt="icon">
-      <img v-else src="../assets/credits.png" alt="icon">
-      <p :class="{'is-active': activeTabbar===item.path}">{{item.name}}</p>
+    <div class="tabbar">
+        <!-- <div class="item" @click="Routeto(tabbar[0].path)">
+            <img v-if="isActiveTabbar===tabbar[0].path" src="../assets/activecredits.png" alt="icon">
+            <img v-else src="../assets/credits.png" alt="icon">
+            <p :class="{'is-isActive': isActiveTabbar===tabbar[0].path}">{{tabbar[0].name}}</p>
+        </div> -->
+        <div class="item" @click="Routeto(tabbar[1].path)">
+            <img v-if="isActiveTabbar===tabbar[1].path" src="../assets/activecredits.png" alt="icon">
+            <img v-else src="../assets/credits.png" alt="icon">
+            <p :class="{'is-isActive': isActiveTabbar===tabbar[1].path}">{{tabbar[1].name}}</p>
+        </div>
+        <div class="item" @click="Routeto(tabbar[2].path)">
+            <img v-if="isActiveTabbar===tabbar[2].path" src="../assets/activecredits.png" alt="icon">
+            <img v-else src="../assets/credits.png" alt="icon">
+            <!-- <p :class="{'is-isActive': isActiveTabbar===tabbar[2].path}">{{tabbar[2].name}}</p> -->
+        </div>
+        <div class="item" @click="Routeto(tabbar[3].path)">
+            <img v-if="isActiveTabbar===tabbar[3].path" src="../assets/activecredits.png" alt="icon">
+            <img v-else src="../assets/credits.png" alt="icon">
+            <p :class="{'is-isActive': isActiveTabbar===tabbar[3].path}">{{tabbar[3].name}}</p>
+        </div>
+        <div class="item" @click="Routeto(tabbar[4].path)">
+            <img v-if="isActiveTabbar===tabbar[4].path" src="../assets/activecredits.png" alt="icon">
+            <img v-else src="../assets/credits.png" alt="icon">
+            <p :class="{'is-isActive': isActiveTabbar===tabbar[4].path}">{{tabbar[4].name}}</p>
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -17,27 +37,22 @@ export default {
                 {
                     name: '圈子',
                     path: '/circle',
-                    active: false
                 }, {
                     name: '动态',
                     path: '/',
-                    active: true,
                 }, {
                     name: '',
                     path: '/post',     
-                    active: false
                 }, {
                     name: '通知',
                     path: '/message',
-                    active: false
                 }, {
                     name: '我',
                     path: '/me',
-                    active: false
                 }
             ],
 
-            activeTabbar: '/',
+            isActiveTabbar: '/',
 
         }
     },
@@ -51,7 +66,7 @@ export default {
         Routeto (path) {
             this.$router.push(path);
             console.log(path);
-            this.activeTabbar = path;
+            this.isActiveTabbar = path;
         }
     },
 
@@ -65,23 +80,24 @@ export default {
         display: flex;
         position: absolute;
         bottom: 0;
-        // border: 1px solid black;
-        height: 44px;
-        border-top: 1px solid #bfbfbf;
-        padding: 2px 0;
+        // border: 0.0625em solid black;
+        height: 2.75em;
+        border-top: 0.0625em solid #bfbfbf;
+        padding: 0.125em 0;
+        align-items: center;
 
         .item {
             flex: 1;
             font-size: 0;
             p,img {
-                font-size: 12px;
-                // border: 1px solid black;
+                font-size: 1.2rem;
+                // border: 0.0625em solid black;
             }
             img {
-                height: 24px;
-                width: 24px;
+                height: 2em;
+                width: 2em;
             }
-            .is-active {
+            .is-isActive {
                 color: cadetblue;
             }
         }

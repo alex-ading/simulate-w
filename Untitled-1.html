@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            text-align: center;
+        }
+        div {
+            margin: 15px 0;
+        }
+        .container {
+            width: 300px;
+            border: 1px solid black;
+            text-align: center;
+            margin: 0 auto;
+        }
+        .update {
+            margin-top: 200px;
+        }
+        .titles {
+            padding: 10px;
+            text-align: left;
+        }
+        .titles div {
+            /* border: 1px slateblue solid; */
+            position: relative;
+        }
+        .titles div button {
+            position: absolute;
+            right: 0;
+        }
+        .progress {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="update">
+        <input type="text" placeholder="请填写 name" id="name"> 
+        <button id="updateNanmeButton">更新 name</button>
+    </div>
+    
+    <div class="container">
+        <div class="titles">
+        </div>
+        <div>
+            <input type="text" placeholder="请填写 title" id="title">
+            <button id="addTitleButton">添加 title</button>
+        </div>
+    </div>
+    <div>
+        <input type="file" name="pic" id="file">
+        <button id="updateFileButton">上传</button>
+    </div>
+    <div class="progress">
+        <span>已上传  <span id="progress">0</span>  %</span>
+    </div>
+    <script src="https://imgcache.qq.com/qcloud/tcbjs/1.10.6/tcb.js"></script>
+    <script>
+        const app = tcb.init({
+        env: 'testv2-9g9rk85b5e9b69de'
+        });
+        var db = app.database();
+        // ajax 封装
+        function ajax(method, para, data) {
+            let request = new XMLHttpRequest();
+            let basicURL = "https://testv2-9g9rk85b5e9b69de.service.tcloudbase.com/";
+            return new Promise(function (resolve, reject) {
+                request.onreadystatechange = function () {
+                    if (request.readyState === 4) {
+                        if (request.status === 200) {
+                            resolve(request.responseText);
+                        } else {
+                            reject(request.status);
+                        }
+                    }
+                };
+                request.open(method, basicURL+para);
+                request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+                request.send(data);
+            });
+        }
+        // 更新 name
+        let updateNanmeButton = document.getElementById("updateNanmeButton");
+        function updateNanme () {
+            let name = document.getElementById("name").value;
+            if (name) {
+                let para = "update_db?table=name&name=" + name;
+                console.log(para);
+                let nameRequ = ajax("get", para);
+                nameRequ.then(res=> {
+                    console.log(res)
+                    alert("更新成功")
+                }).catch(res => {
+                    alert("更新失败，请再试一次")
+                })
+            } else {
+                alert("请填写 name")
+            }
+        }
+        updateNanmeButton.addEventListener("click", updateNanme, false)
+        // 请求所有 title 并在 html 中展示
+        // 然后删除
+        async function deleteTitle (event) {
+            let target = event.target;
+            let key = target.getAttribute("key");
+            console.log(key);
+            let para = "delete_db?table=title&key=" + key;
+            await ajax("get", para);
+            alert("已经删除");
+            target.parentNode.parentNode.removeChild(target.parentNode);
+        }
+        function updateTitle (data) {
+            let titles = document.getElementsByClassName("titles")[0];
+            titles.innerHTML = "";
+            for (let i of data) {
+                let div = document.createElement("div");
+                let span = document.createElement("span");
+                span.innerHTML = i.value;
+                let btn = document.createElement("button");
+                btn.innerHTML = "删除";
+                btn.setAttribute("key", i._id);
+                btn.addEventListener("click", deleteTitle, false)
+                div.appendChild(span);
+                div.appendChild(btn);
+                titles.appendChild(div)
+            }
+        }
+        let titleRequ = ajax("get", "query_db?table=title&all=true");
+        titleRequ.then(res => {
+            let data = JSON.parse(res);
+            // console.log(data);
+            updateTitle(data);
+        })
+        // 添加 title
+        function addTitle () {
+            let title = document.getElementById("title").value;
+            if (title) {
+                let para = "insert_db?table=title&" + "title=" + title;
+                console.log(para)
+                let titleRequ = ajax("get", para);
+                titleRequ.then(res => {
+                    let data = JSON.parse(res);
+                    updateTitle(data)
+                })
+            } else {
+                alert("请填写 title")
+            }
+        }
+        let addTitleButton = document.getElementById("addTitleButton");
+        addTitleButton.addEventListener("click", addTitle);
+        // 上传logo
+        let updateFileButton = document.getElementById("updateFileButton");
+        function updateFile() {
+            let file = document.getElementById("file").files[0];
+            app
+            .uploadFile({
+                // 云端路径
+                cloudPath: "img/" + file.name,
+                // 需要上传的文件，File 类型
+                filePath: file,
+                onUploadProgress: function (progressEvent) {
+                    let progress = document.getElementsByClassName("progress")[0];
+                    progress.style.display = "block";
+                    let span = document.getElementById("progress");
+                    var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    span.innerHTML = percentCompleted;
+                    // console.log(percentCompleted);
+                    if (percentCompleted === 100) {
+                        setTimeout(function() {
+                            let progress = document.getElementsByClassName("progress")[0];
+                            progress.style.display = "none";
+                            let span = document.getElementById("progress");
+                            span.innerHTML = "0";
+                        }, 2000)
+                    }
+                }
+            })
+            .then((res) => {
+                // 返回文件 ID
+                // console.log("成功")
+                // console.log(res.fileID);
+                let para = "update_db?table=name";
+                let requ = ajax("post", para, res.fileID);
+                requ.then(res => {
+                    console.log(res)
+                }).catch(err => {
+                    console.log(err)
+                })
+            });
+        }
+        updateFileButton.addEventListener("click", updateFile, false);
+        
+        // 访问云存储之前要先登录
+        // 匿名登陆
+        const auth = app.auth();
+        async function signInAnonymously() {
+            await auth.anonymousAuthProvider().signIn()
+            .then((res)=>{
+                let loginState = auth.hasLoginState();
+                let uid = loginState.user.uid;
+                // console.log(uid)
+            })
+        }
+        signInAnonymously();
+        
+    </script>
+</body>
+</html>
