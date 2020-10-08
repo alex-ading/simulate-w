@@ -1,16 +1,20 @@
 <template>
     <div>
-        <navinfo>
-            <img slot="left" src="../assets/back.png" alt="" class="navinfo-left-icon" @click="clickBack">
-            <span slot="right" class="btn new-post-btn" @click="clickRepost">发布</span>
-            <span slot="title">转发动态</span>
-        </navinfo>
-        <div class="repost-input-container">
-            <textarea class="repost-input" v-model="detail"></textarea>
+        <div :class="{'new-post-cover': isToastShow}">
+            <navinfo>
+                <img slot="left" src="../assets/back.png" alt="back" class="navinfo-left-icon" @click="clickBack">
+                <span slot="right" class="btn new-post-btn" @click="clickRepost">发布</span>
+                <span slot="title">转发动态</span>
+            </navinfo>
+            <div class="repost-input-container">
+                <textarea class="repost-input" v-model="detail"></textarea>
 
-            <repost-detail :opData="opData"></repost-detail>
+                <repost-detail :opData="opData"></repost-detail>
+            </div>
         </div>
-
+        <div v-if="isToastShow" class="new-post-ing">
+            <span class="new-post-toast">{{toastText}}</span>           
+        </div>
     </div>
 </template>
 
@@ -31,7 +35,9 @@ export default {
         return {
             originalpostid: null,
             opData: null,
-            detail: null
+            detail: null,
+            toastText: "正在发送",
+            isToastShow: false,
         }
     },
     methods: {
@@ -40,11 +46,13 @@ export default {
         },
 
         clickRepost() {
-            console.log(this.detail)
+            // console.log(this.detail)
             let userid = this.$store.state.userid;
             let detail = this.detail;    
             let originalpostid = this.originalpostid;
-            
+            this.toastText = "正在发送"
+            this.isToastShow = true;
+
             axios({
                 method: "post",
                 url: "https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/new_repost",
@@ -54,24 +62,32 @@ export default {
                     originalpostid: originalpostid
                 }
             }).then(res => {
-                console.log(res.data);
+                // console.log(res.data);
                 this.$store.commit("addRepost",{
                     newopid: res.data,
                     opid: this.originalpostid
                 })
-                this.$router.go(-1)
+                this.toastText = "发送成功";
+                setTimeout(() => {
+                    this.isToastShow = false;
+                    this.$router.go(-1)
+                }, 1500)
             }).catch(err => {
-                console.log(err)
+                console.log(err);
+                this.toastText = "暂时没有权限";
+                setTimeout(() => {
+                    this.isToastShow = false;
+                }, 2000)
             })
         }
     },
 
     created() {
-        console.log("repost created")
+        // console.log("repost created")
         this.originalpostid = this.$route.query.originalpostid;
         this.$store.commit("getOriginalPostbyID", this.originalpostid)
         this.opData = this.$store.state.repostData;
-        console.log(this.opData)
+        // console.log(this.opData)
     },
 }
 </script>
@@ -88,4 +104,41 @@ export default {
         border: 0;
     }
 
+    .btn {
+        background-color: #b0cac7;
+        color: white;
+    }
+
+    .new-post-btn {
+        position: absolute;
+        right: 0.625em;
+        margin-top: 0.575em;
+        border-radius: 0.7em;
+        padding: 0.1em 0.4em;
+    }
+
+    .new-post-cover {
+        opacity: 0.3;
+    }
+
+    .new-post-ing {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .new-post-toast {
+        position: absolute;
+        bottom: 5em;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 500;
+        padding: 0.5em;
+        // color: #2c3e50;
+        color: white;
+        background-color:  #b0cac7;
+        border-radius: 0.625em;
+    }
 </style>

@@ -9,10 +9,12 @@ export default new Vuex.Store({
       userid: 1,
       tlscrollTop: null,
       profilescrollTop: null,
+      messageData: null,
       isNewPost: false,
       timelineData: null,
       profileData: null,
-      repostData: null
+      repostData: null,
+      readList: null // 未读的消息
     },
     mutations: {
         login(state, userid) {
@@ -44,6 +46,19 @@ export default new Vuex.Store({
             state.profileData = profileData;
         },
 
+        updateMessageData(state, payload) {
+            payload.messageData.sort(function(x, y) {
+                return y.time - x.time
+            })
+            // console.log(payload)
+            state.messageData = payload.messageData;
+            state.readList = payload.readList;
+        },
+
+        updateReadList(state) {
+            state.readList = [];
+        },
+
         cancelLike(state, originalpostid) {
             if (state.timelineData) {
                 for (let i of state.timelineData) {
@@ -51,7 +66,7 @@ export default new Vuex.Store({
                         for (let j=0; j<i.likes.length; j++) {
                             if (i.likes[j].userid === state.userid) {
                                 i.likes.splice(j, 1);
-                                console.log("==================本地数据已更改")
+                                // console.log("==================本地数据已更改")
                                 break
                             }
                         }
@@ -67,7 +82,7 @@ export default new Vuex.Store({
                         for (let j=0; j<i.likes.length; j++) {
                             if (i.likes[j].userid === state.userid) {
                                 i.likes.splice(j, 1);
-                                console.log("==================本地数据已更改")
+                                // console.log("==================本地数据已更改")
                                 break
                             }
                         }
@@ -81,7 +96,8 @@ export default new Vuex.Store({
                 for (let i of state.timelineData) {
                     if (Number(i.originalpostid) === Number(payload.originalpostid)) {
                         i.likes.push({userid: state.userid, time: payload.time})
-                        console.log("==================本地数据已更改")
+                        // console.log("==================本地数据已更改");
+                        // console.log(state.userid)
                         break
                     }
                 }
@@ -93,7 +109,7 @@ export default new Vuex.Store({
                 for (let i of state.profileData.ops) {
                     if (Number(i.originalpostid) === Number(payload.originalpostid)) {
                         i.likes.push({userid: state.userid, time: payload.time})
-                        console.log("==================本地数据已更改")
+                        // console.log("==================本地数据已更改")
                         break
                     }
                 }
@@ -105,7 +121,7 @@ export default new Vuex.Store({
                 following: state.profileData.info.userid,
                 userid: state.userid
             })
-            console.log(state.profileData.followers)
+            // console.log(state.profileData.followers)
         },
 
         cancelFollower(state) {
@@ -115,7 +131,7 @@ export default new Vuex.Store({
                     break
                 }
             }
-            console.log(state.profileData.followers)
+            // console.log(state.profileData.followers)
         },
 
         addRepost(state, payload) {
@@ -194,8 +210,9 @@ export default new Vuex.Store({
                 }
             }      
         },
+
         getOriginalPostbyID(state, originalpostid) {
-            console.log("opid是"+originalpostid)
+            // console.log("opid是"+originalpostid)
 
             if (state.timelineData) {
                 for (let i of state.timelineData) {
@@ -221,7 +238,7 @@ export default new Vuex.Store({
         requestTimelineData(context, userid) {
             axios.get(`https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_timeline?userid=${userid}`)
             .then(response => {
-                console.log(response.data);
+                // console.log(response.data);
                 for (let i of response.data) {
                     if (i.comments === undefined) {
                         i.comments = [];
@@ -253,7 +270,7 @@ export default new Vuex.Store({
                     profileid: profileid
                 }
             }).then(res => {
-                console.log(res.data)
+                // console.log(res.data)
                 for (let i of res.data.ops) {
                     if (!i.likes) {
                         i.likes = [];
@@ -314,6 +331,7 @@ export default new Vuex.Store({
             let day = new Date();
             let time = day.getTime();
             context.commit("addLike", {originalpostid: originalpostid, time: time});
+            // console.log(context.state.userid)
             axios({
                 method: "get",
                 url:"https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/process_like",
@@ -324,7 +342,7 @@ export default new Vuex.Store({
                     time: time
                 }
             }).then(res => {
-                console.log(res.data)
+                // console.log(res.data)
                 console.log("数据库数据已更新")
             }).catch(err => {
                 console.log(err)
@@ -343,7 +361,7 @@ export default new Vuex.Store({
                     time: payload.time
                 }
             }).then(res => {
-                console.log(res.data)
+                // console.log(res.data)
                 console.log("数据库数据已更新")
             }).catch(err => {
                 console.log(err)

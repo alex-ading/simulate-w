@@ -1,13 +1,12 @@
 <template>
-    <div class="navinfo">
+    <nav class="navinfo">
         <slot name="left"></slot>
         <slot name="middle"></slot>
         <slot name="right"></slot>
         <div class="navtitle">
             <slot name="title">动态</slot>
         </div>
-
-    </div>
+    </nav>
   
 </template>
 

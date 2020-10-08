@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-      <keep-alive exclude="OriginalPostDetail,Followers,Followings,Repost,CommentDetail">
+      <keep-alive exclude="OriginalPostDetail,Followers,Followings,Repost,CommentDetail,Message,NewPost">
             <router-view class="view"></router-view>
       </keep-alive>
     </div>
@@ -25,7 +25,8 @@ export default {
 
   body, html {
       height: 100%;
-      width: 100%;
+      width: 100%;        
+      line-height: 1.3;
   }
 
   html {
@@ -34,18 +35,22 @@ export default {
 
   body {
     font-size: 1.6rem;
+
   }
 
   input{
     outline: none;
     color: #2c3e50;
+    font-family: Microsoft YaHei;
   }
   textarea{
     outline: none;
     color: #2c3e50;
     resize: none; // 禁用右下角拖动图标
-    font-size: 16px;
+    font-size: 1.6rem;
+    font-family: Microsoft YaHei;
   }
+
   #app {
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;

@@ -1,7 +1,7 @@
 <template>
         <div class="comment" @click="clickReplytoComment">
             <div class="comment-user-info">
-                <img class="comment-head-portrait comment-user-info-item" :src="comment.headportrait" alt="error">
+                <img class="comment-head-portrait comment-user-info-item" :src="comment.headportrait" alt="head-portrait">
                 <div class="comment-user-info-item">
                     <p class="comment-user-name">{{comment.username}}</p>
                     <p class="comment-time">{{comment.time | timeFilter}}</p>

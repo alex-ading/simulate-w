@@ -1,7 +1,7 @@
 <template>
     <div @click.stop="clickRoutetoOriginalPost">
         <div v-if="opData" class="repost-info">
-            <img :src="opData.headportrait" alt="" class="repost-info-item">
+            <img :src="opData.headportrait" alt="head-portrait" class="repost-info-item">
             <div class="repost-info-item repost-detail">
                 <span><strong>{{opData.username}}</strong>：{{opData.detail}}</span>
             </div>
@@ -14,11 +14,10 @@ export default {
     props: ["opData"],
     methods: {
         clickRoutetoOriginalPost() {
-            console.log("OriginalPostDetail")
+            // console.log("OriginalPostDetail")
             this.$router.push({
                 name: "OriginalPostDetail",
                 query: {
-                    userid: this.opData.userid,
                     originalpostid: this.opData.originalpostid
                 }
             })           

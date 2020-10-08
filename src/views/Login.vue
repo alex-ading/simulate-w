@@ -39,7 +39,7 @@ export default {
                 return false
             } else {
                 if (this.userid === this.password) {
-                    console.log("登录成功")
+                    // console.log("登录成功")
                     
                     // 改变 vuex 中 userid 的值
                     this.$store.commit("login", Number(this.userid))

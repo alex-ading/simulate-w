@@ -1,16 +1,16 @@
 <template>
     <div v-if="itemInfo!==null">
-        <navinfo  :class="{'new-comment-cover': isNewPosting}">
-            <img slot="left" src="../assets/back.png" alt="" class="navinfo-left-icon" @click="clickBack">
+        <navinfo :class="{'new-comment-cover': isToastShow}">
+            <img slot="left" src="../assets/back.png" alt="back" class="navinfo-left-icon" @click="clickBack">
             <span slot="title">动态正文</span>
         </navinfo>
 
-        <div class="orginal-post-detail-container"  :class="{'new-comment-cover': isNewPosting}">
+        <div class="orginal-post-detail-container" :class="{'new-comment-cover': isToastShow}">
 
-            <original-post :itemInfo="itemInfo" @cancelLike="cancelLike" @addLike="addLike">
+            <original-post :itemInfo="itemInfo" @cancelLike="cancelLike" @addLike="addLike" @click.native="clickReplytoPost">
                 <div v-if="itemInfo.img!==undefined" slot="post-img" :class="{'post-img-one': itemInfo.img.length === 1,
                                                                     'post-img-more': itemInfo.img.length !== 1}">
-                    <img v-for="(img, index) in itemInfo.img" preview="0" :src="img" :key="index" alt="">
+                    <img v-for="(img, index) in itemInfo.img" preview="0" :src="img" :key="index" alt="pic">
                 </div>
 
                 <!-- <span v-if="itemInfo.circle!==undefined" slot="post-circle" class="post-circle" @click.stop="test">{{itemInfo.circle}}</span> -->
@@ -29,17 +29,17 @@
 
         </div>
 
-        <div class="comment-react"  :class="{'new-comment-cover': isNewPosting}">
-            <textarea type="text" :placeholder="placeholder" :class="{'comment-input': true,
+        <div class="comment-react" :class="{'new-comment-cover': isToastShow}">
+            <textarea type="text" :placeholder="placeholder" :class="{'comment-input': !isInput,
                                                                         'input-status': isInput}" 
                                                                         id="input-comment" 
                                                                         v-model="comment" 
                                                                         @focus="focusChangeHeight"
                                                                         @blur="blurChangeHeight"></textarea>
-            <span class="comment-btn" @click="clickPostComment">发送</span>
+            <span class="comment-btn" @click="clickPostComment">发布</span>
         </div>
-        <span :class="{'new-comment-toast': isNewPosting,
-                        'no-comment-toast': !isNewPosting}">正在发送</span>           
+        <span :class="{'new-comment-toast': isToastShow,
+                        'no-comment-toast': !isToastShow}">{{toastText}}</span>           
   </div>
 </template>
 
@@ -59,13 +59,14 @@ export default {
             itemInfo: null,
             comment: "", // 用户输入的评论
             userid: null, // 登录者id
-            isNewPosting: false,
+            isToastShow: false,
             placeholder: "回复博主：",
             isReply: false,
             replytouserid: null,
             replytousername: null,
             commentid: null,
-            isInput: false
+            isInput: false,
+            toastText: "正在发送"
         }
     },
     components: {
@@ -93,18 +94,19 @@ export default {
         }
     },
     methods: {
-        test() {
-            console.log("自己的事件" + event.currentTarget.nodeName)
-        },
+        // test() {
+        //     console.log("自己的事件" + event.currentTarget.nodeName)
+        // },
         
         clickBack() {
             this.$router.go(-1)
         },
 
         clickPostComment() {
-            console.log(this.comment)
+            // console.log(this.comment)
             let detail = this.comment;
-            this.isNewPosting = true;
+            this.isToastShow = true;
+            this.toastText = "正在发送";
 
             // 如果是 comment
             if (!this.isReply) {
@@ -119,7 +121,7 @@ export default {
                     }
                     // 自己返回一个promise，所以直接使用then
                     }).then(res => {
-                    console.log(res.data);
+                    // console.log(res.data);
                     this.$store.commit("addComment", {
                         opid: this.itemInfo.originalpostid,
                         newComment: res.data
@@ -127,7 +129,13 @@ export default {
                     this.itemInfo.comments.push(res.data);
                     this.comment = "";
                     // console.log(this.itemInfo.comments)
-                    this.isNewPosting = false;
+                    this.isToastShow = false;
+                }).catch(err => {
+                    console.log(err);
+                    this.toastText = "暂时没有权限";
+                    setTimeout(() => {
+                        this.isToastShow = false;
+                    }, 2000)
                 })
             } else {
                 // 如果是 reply
@@ -161,7 +169,13 @@ export default {
                             }
                         }
                         this.comment = "";
-                        this.isNewPosting = false;
+                        this.isToastShow = false;
+                }).catch(err => {
+                    console.log(err);
+                    this.toastText = "暂时没有权限";
+                    setTimeout(() => {
+                        this.isToastShow = false;
+                    }, 2000)
                 })
             }
         },
@@ -175,7 +189,7 @@ export default {
         },
 
         cancelLike() {
-            console.log("detail父 cancelLike")
+            // console.log("detail父 cancelLike")
 
             // 更改本页面数据
             for (let i=0; i<this.itemInfo.likes.length; i++) {
@@ -205,13 +219,13 @@ export default {
         },
 
         addLike() {
-            console.log("detail父 addLike");
+            // console.log("detail父 addLike");
 
             let day = new Date();
             let time = day.getTime();
             // 更改本页面数据
             this.itemInfo.likes.push({userid: this.userid, time: time});
-            console.log({userid: this.userid, time: time})
+            // console.log({userid: this.userid, time: time})
             // 更改tl数据
             this.$store.commit("addLike", {originalpostid: this.originalpostid, time: time});
             // 更改pf数据
@@ -234,22 +248,28 @@ export default {
         },
 
         clickReplytoComment(comment) {
+            // console.log(comment)
             this.placeholder = "回复" + comment.username + "：";
             this.isReply = true;
             this.replytouserid = comment.userid;
             this.replytousername = comment.username;
             this.commentid = comment.commentid;
+        },
+
+        clickReplytoPost() {
+            this.placeholder = "回复博主：",
+            this.isReply = false;
         }
     },
     created() {
-        console.log("opd created")
-        this.userid = this.$route.query.userid; // 登录者id
+        // console.log("opd created")
+        this.userid = this.$store.state.userid; // 登录者id
         this.originalpostid = this.$route.query.originalpostid;
         let url = `https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_op?originalpostid=${this.originalpostid}`;
 
         axios.get(url)
         .then(response => {
-            console.log(response.data);
+            // console.log(response.data);
             this.$previewRefresh();
             
             if (response.data.comments === undefined) {
@@ -262,43 +282,64 @@ export default {
                 response.data.reposts = [];
             }
             this.itemInfo = response.data;
-            console.log(this.itemInfo)
+            // console.log(this.itemInfo)
         })
         .catch(function (error) {
-            console.log(error);
+            // console.log(error);
         });
     },
 
     destroyed() {
-        console.log("destroyed")
+        // console.log("destroyed")
     },
 
     watch: {
         $route(to, from) {
-            console.log(to);
-            console.log(from)
+            // console.log(to);
+            // console.log(from)
             if (to.path === "/detail") {
                 this.postuserid = this.$route.query.userid; // 发帖人id
                 this.originalpostid = this.$route.query.originalpostid;
                 this.userid = this.$store.state.userid; // 登录者id
-                let url = `https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_timeline?userid=${this.userid}`;
+                // let url = `https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_timeline?userid=${this.userid}`;
 
+                // axios.get(url)
+                // .then(response => {
+                //     console.log(response.data);
+                //     this.$previewRefresh()
+                //     for (let i of response.data) {
+                //         if (Number(i.userid) === Number(this.postuserid) && Number(i.originalpostid) === Number(this.originalpostid)) {
+                //             if (i.comments === undefined) {
+                //                 i.comments = [];
+                //             }
+                //             if (i.likes === undefined) {
+                //                 i.likes = [];
+                //             }
+                //             this.itemInfo = i;
+                //             console.log(this.itemInfo)
+                //         }
+                //     }
+                // })
+                // .catch(function (error) {
+                //     console.log(error);
+                // });
+                let url = `https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_op?originalpostid=${this.originalpostid}`;
                 axios.get(url)
                 .then(response => {
-                    console.log(response.data);
-                    this.$previewRefresh()
-                    for (let i of response.data) {
-                        if (Number(i.userid) === Number(this.postuserid) && Number(i.originalpostid) === Number(this.originalpostid)) {
-                            if (i.comments === undefined) {
-                                i.comments = [];
-                            }
-                            if (i.likes === undefined) {
-                                i.likes = [];
-                            }
-                            this.itemInfo = i;
-                            console.log(this.itemInfo)
-                        }
+                    // console.log(response.data);
+                    this.$previewRefresh();
+                    
+                    if (response.data.comments === undefined) {
+                        response.data.comments = [];
                     }
+                    if (response.data.likes === undefined) {
+                        response.data.likes = [];
+                    }
+                    if (response.data.reposts === undefined) {
+                        response.data.reposts = [];
+                    }
+                    this.itemInfo = response.data;
+                    // console.log(this.itemInfo)
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -322,8 +363,8 @@ export default {
         transform: translateX(-50%);
         font-weight: 500;
         padding: 0.5em;
-        color: #2c3e50;
-        background-color: #bfbfbf;
+        color: white;
+        background-color:  #b0cac7;
         border-radius: 0.625em;
     }
 
@@ -411,28 +452,29 @@ export default {
         position: absolute;
         bottom: 0;
         width: 100%;
+        min-height: 2.8em;
         align-items: center;
         background-color: white;
         border-top: #bfbfbf solid 0.0625em;
-        
+                // border-top: black solid 0.0625em;
+
         .comment-input {
             flex: 1 0 auto;
             height: 1.75em;
-            margin: 0.46875em 0.625em;
+            margin: 0 0.625em;
             line-height: 1.75em;
-            border: #bfbfbf 0.0625em solid;
-            border-radius: 0.3em;
             transition: height 0.3s;
+            border: none;
+            // border-top: #bfbfbf solid 0.0625em;
 
         }
 
         .comment-btn {
             flex: 0 0 auto;
-            height: 1.75em;
-            line-height: 1.75em;
             margin-right: 0.625em;
-            padding: 0 0.625em;
+            padding: 0.2em 0.625em;
             background-color: #b0cac7;
+            font-size: 1.4rem;
             color: white;
             border-radius: 0.875em;
         }
@@ -442,10 +484,18 @@ export default {
         }
 
         .input-status {
+            flex: 1 0 auto;
+            // height: 1.75em;
+            margin: 0.46875em 0.625em;
+            // line-height: 1.75em;
+            // border: #bfbfbf 0.0625em solid;
+            // border-radius: 0.3em;
+            border: none;
+            transition: height 0.3s;
             height: 7em;
             line-height: 1.3;
             padding: 0.3125em;
-            transition: height 0.3s;
+            // transition: height 0.3s;
         }
     }
 </style>

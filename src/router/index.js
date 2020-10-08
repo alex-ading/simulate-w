@@ -2,6 +2,17 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '../store/index'
 
+// const Timeline = () => import ('../views/Timeline.vue')
+// const Profile = () => import ('../views/Profile.vue')
+// const NewPost = () => import ('../views/NewPost.vue')
+// const Message = () => import ('../views/Message.vue')
+// const OriginalPostDetail = () => import ('../views/OriginalPostDetail.vue')
+// const Followings = () => import ('../views/Followings.vue')
+// const Followers = () => import ('../views/Followers.vue')
+// const Repost = () => import ('../views/Repost.vue')
+// const CommentDetail = () => import ('../views/CommentDetail.vue')
+// const Login = () => import ('../views/Login.vue')
+
 import Timeline from '../views/Timeline.vue'
 import Profile from '../views/Profile.vue'
 import NewPost from '../views/NewPost.vue'

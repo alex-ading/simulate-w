@@ -1,6 +1,6 @@
 <template>
     <div class="follow" @click="clickRoutetoProfile">
-        <img :src="userinfo.headportrait" class="follow-item" alt="">
+        <img :src="userinfo.headportrait" class="follow-item" alt="head-portrait">
         <div class="follow-item">
             <p class="follow-username">{{userinfo.username}}</p>
             <p>{{userinfo.intro}}</p>

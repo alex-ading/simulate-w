@@ -1,13 +1,13 @@
 <template>
     <div>
-        <navinfo>
-            <img slot="left" src="../assets/back.png" alt="" class="navinfo-left-icon" @click="clickBack">
+        <navinfo :class="{'new-comment-cover': isToastShow}">
+            <img slot="left" src="../assets/back.png" alt="back" class="navinfo-left-icon" @click="clickBack">
             <span slot="title">评论详情</span>
         </navinfo>
-        <div class="original-comment-detail">
+        <div class="original-comment-detail" :class="{'new-comment-cover': isToastShow}">
             <div @click="clickReplytoReply(commentDetail)">
                 <div v-if="commentDetail" class="comment-detail-user-info">
-                    <img class="comment-detail-head-portrait comment-detail-user-info-item" :src="commentDetail.headportrait" alt="" @click.stop="clickRoutetoProfile">
+                    <img class="comment-detail-head-portrait comment-detail-user-info-item" :src="commentDetail.headportrait" alt="head-portrait" @click.stop="clickRoutetoProfile">
                     <div class="comment-detail-user-info-item">
                         <p class="comment-detail-user-name">{{commentDetail.username}}</p>
                         <p class="comment-detail-time">{{commentDetail.time | timeFilter}}</p>
@@ -15,6 +15,7 @@
                 </div>
                 <div v-if="commentDetail" class="comment-detail-detail">
                     <p>{{commentDetail.detail}}</p>
+                    <p class="view-post" @click.stop="clickRoutetoOriginalPost">查看原动态</p>
                 </div>
             </div>
 
@@ -34,11 +35,11 @@
                                                                             v-model="comment" 
                                                                             @focus="focusChangeHeight"
                                                                             @blur="blurChangeHeight"></textarea>
-                <span class="comment-btn" @click="clickPostReply">发送</span>
+                <span class="comment-btn" @click="clickPostReply">发布</span>
             </div>
-
         </div>
-
+        <span :class="{'new-comment-toast': isToastShow,
+                        'no-comment-toast': !isToastShow}">{{toastText}}</span>  
     </div>
 </template>
 
@@ -62,7 +63,9 @@ export default {
             replytouserid: null,
             replytousername: null,
             commentid: null,
-            isReplytoComment: false,
+            isReplytoComment: true,
+            isToastShow: false,
+            toastText: "正在发送"
         }
     },
 
@@ -97,7 +100,9 @@ export default {
         },
 
         clickPostReply() {
-            console.log(this.comment)
+            // console.log(this.comment)
+            this.isToastShow = true;
+            this.toastText = "正在发送";
             axios({
                 methos: "get",
                 url: 'https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/insert_comment',
@@ -113,7 +118,7 @@ export default {
                 }
                 // 自己返回一个promise，所以直接使用then
                 }).then(res => {
-                    console.log(res.data);
+                    // console.log(res.data);
                     this.$store.commit("addReply", {
                         opid: this.itemInfo.originalpostid,
                         commentid: this.commentid,
@@ -124,10 +129,17 @@ export default {
                             if (!i.replies) {
                                 i.replies = [];
                             }
-                            i.replies.push(res.data);
+                            i.replies.unshift(res.data);
                         }
                     }
                     this.comment = "";
+                    this.isToastShow = false;
+                }).catch(err => {
+                    console.log(err);
+                    this.toastText = "暂时没有权限";
+                    setTimeout(() => {
+                        this.isToastShow = false
+                    }, 2000)
                 })
         },
 
@@ -135,26 +147,36 @@ export default {
             if (reply.replies) {
                 // 回复评论主
                 this.isReplytoComment = true;
+                this.placeholder = "回复评论：";
             } else {
                 // 回复其他reply
                 this.isReplytoComment = false;
+                this.placeholder = "回复" + reply.username + "：";
             }
-            console.log(this.isReplytoComment)
-            this.placeholder = "回复" + reply.username + "：";
+            console.log(this.isReplytoComment);
             this.replytouserid = reply.userid;
             this.replytousername = reply.username;
-        }
+        },
+
+        clickRoutetoOriginalPost() {
+            this.$router.push({
+                name: "OriginalPostDetail",
+                query: {
+                    originalpostid: this.originalpostid
+                }
+            })
+        },
     },
 
     created() {
-        console.log("comment detail created")
+        // console.log("comment detail created")
         this.originalpostid = this.$route.query.originalpostid;
         this.commentid = this.$route.query.commentid;
         let url = `https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_op?originalpostid=${this.originalpostid}`;
 
         axios.get(url)
         .then(response => {
-            console.log(response.data);
+            // console.log(response.data);
             if (response.data.likes === undefined) {
                 response.data.likes = [];
             }
@@ -163,16 +185,21 @@ export default {
             }
 
             for (let comment of response.data.comments) {
-                console.log(comment.commentid, this.commentid)
+                // console.log(comment.commentid, this.commentid)
                 if (comment.commentid === Number(this.commentid)) {
+                    comment.replies.sort((x, y) => {
+                        return y.time - x.time
+                    })
                     this.commentDetail = comment;
+                    this.replytouserid = comment.userid;
+                    this.replytousername = comment.username;
                     break
                 }
             }
 
             this.itemInfo = response.data;
-            this.placeholder = "回复 " + this.commentDetail.username + "："
-            console.log(this.commentDetail)
+            this.placeholder = "回复评论：";
+            // console.log(this.commentDetail)
         })
         .catch(function (error) {
             console.log(error);
@@ -182,10 +209,29 @@ export default {
 </script>
 
 <style lang="less">
+    .new-comment-cover {
+        opacity: 0.3;
+    }
+
+    .new-comment-toast {
+        position: absolute;
+        bottom: 5em;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 500;
+        padding: 0.5em;
+        color: white;
+        background-color:  #b0cac7;
+        border-radius: 0.625em;
+    }
+
+    .no-comment-toast {
+        display: none;
+    }
     .original-comment-detail {
         width: 100%;
         height: calc(100% - 5.5em);
-        border-bottom: 0.0625em solid #bfbfbf;
+        // border-bottom: 0.0625em solid #bfbfbf;
         background-color: #f4f4f4;
         text-align: left;
         // border: 1px solid black;
@@ -224,7 +270,11 @@ export default {
             background-color: white;
             border-bottom: 0.0625em solid #bfbfbf;
 
-
+            .view-post {
+                display: inline-block;
+                padding: 0.3125em 0;
+                color: #49afcd;
+            }
         }
         .comment-detail-detail p {
             text-align: left;
@@ -249,27 +299,30 @@ export default {
             position: absolute;
             bottom: 0;
             width: 100%;
+            min-height: 2.8em;
             align-items: center;
             background-color: white;
             border-top: #bfbfbf solid 0.0625em;
-            
+            // border-top: black solid 0.0625em;
+            // background-color: yellow;
+
             .comment-input {
                 flex: 1 0 auto;
                 height: 1.75em;
-                margin: 0.46875em 0.625em;
+                // margin: 0.46875em 0.625em;
+                margin: 0 0.625em;
                 line-height: 1.75em;
-                border: #bfbfbf 0.0625em solid;
-                border-radius: 0.3em;
+                // border: #bfbfbf 0.0625em solid;
+                // border-radius: 0.3em;
                 transition: height 0.3s;
+                border: none;
 
             }
 
             .comment-btn {
                 flex: 0 0 auto;
-                height: 1.75em;
-                line-height: 1.75em;
                 margin-right: 0.625em;
-                padding: 0 0.625em;
+                padding: 0.2em 0.625em;
                 background-color: #b0cac7;
                 color: white;
                 border-radius: 0.875em;
@@ -280,10 +333,22 @@ export default {
             }
 
             .input-status {
-                height: 7em;
-                line-height: 1.3;
-                padding: 0.3125em;
-                transition: height 0.3s;
+                // height: 7em;
+                // line-height: 1.3;
+                // padding: 0.3125em;
+                // transition: height 0.3s;
+            flex: 1 0 auto;
+            // height: 1.75em;
+            margin: 0.46875em 0.625em;
+            // line-height: 1.75em;
+            // border: #bfbfbf 0.0625em solid;
+            // border-radius: 0.3em;
+            border: none;
+            transition: height 0.3s;
+            height: 7em;
+            line-height: 1.3;
+            padding: 0.3125em;
+            // transition: height 0.3s;
             }
         }
     }

@@ -1,7 +1,7 @@
 <template>
     <div v-if="followersData!==null">
         <navinfo>
-            <img slot="left" src="../assets/back.png" alt="" class="navinfo-left-icon" @click="clickBack">
+            <img slot="left" src="../assets/back.png" alt="back" class="navinfo-left-icon" @click="clickBack">
             <span slot="title">被关注</span>
         </navinfo>
         <div class="followers">
@@ -39,7 +39,7 @@ export default {
 
     created() {
         this.profileid = this.$route.query.profileid;
-        console.log(this.profileid);
+        // console.log(this.profileid);
         axios({
             method: "get",
             url: "https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_follow",
@@ -49,8 +49,8 @@ export default {
             }
         }).then(res => {
             this.followersData = res.data;
-            console.log(this.followersData)
-        })
+
+})
     },
 
 }

@@ -15,18 +15,18 @@
         <slot name="post-circle"></slot>
         <div class="post-react">
             <div class="post-like post-react-item"  @click.stop="clickLikePost">
-                <img v-if="isLike" src="../assets/activelike.png" alt="">
-                <img v-else src="../assets/like.png" alt="">
+                <img v-if="isLike" src="../assets/activelike.png" alt="like">
+                <img v-else src="../assets/like.png" alt="like">
                 <span v-if="itemInfo.likes.length!==0">{{itemInfo.likes.length}}</span>
             </div>
 
             <div class="post-comment post-react-item">
-                <img src="../assets/comment.png" alt="">
+                <img src="../assets/comment.png" alt="comment">
                 <span v-if="itemInfo.comments.length!==0">{{totalComment}}</span>
             </div>
 
             <div class="post-repost post-react-item"  @click.stop="clickRoutetoRepost">
-                <img src="../assets/repost.png" alt="">
+                <img src="../assets/repost.png" alt="repost">
                 <span v-if="itemInfo.reposts.length!==0">{{itemInfo.reposts.length}}</span>
             </div>
         </div>

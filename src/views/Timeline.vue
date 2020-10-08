@@ -1,17 +1,20 @@
 <template>
     <div>
         <navinfo>
-            <img slot="left" src="../assets/home.png" alt="" class="navinfo-left-icon" @click="clickRoutetoProfile">     
-            <img slot="middle" src="../assets/message.png" alt="" class="navinfo-middle-icon" @click="clickRoutetoMessage">           
-            <img slot="right" src="../assets/post.png" alt="" class="navinfo-right-icon" @click="clickNewPost">           
+            <img slot="left" src="../assets/home.png" alt="home" class="navinfo-left-icon" @click="clickRoutetoProfile">
+            <div slot="middle" class="navinfo-middle-icon" @click="clickRoutetoMessage">
+                <img src="../assets/message.png" alt="message">
+                <span v-if="reminder!==0" class="navinfo-reminder">{{reminder}}</span>           
+            </div>     
+            <img slot="right" src="../assets/post.png" alt="post" class="navinfo-right-icon" @click="clickNewPost">           
         </navinfo>
         <div class="original-post-container" ref="container" @touchstart="handleTouchStart"
                                                             @touchmove="handleTouchMove"
                                                             @touchend="handleTouchEnd">
             <div class="refresh-container" ref="refresh">
                 <div class="refresh">
-                    <img v-if="!isRefresh" src="../assets/refresh.png" alt="">
-                    <img v-else src="../assets/refreshing.png" alt="">
+                    <img v-if="!isRefresh" src="../assets/refresh.png" alt="refresh">
+                    <img v-else src="../assets/refreshing.png" alt="refreshing">
                     <span>{{refreshText}}</span>
                 </div>
                 <original-post v-for="(item, index) in $store.state.timelineData" 
@@ -22,11 +25,10 @@
                                     >
                     <div v-if="item.img" slot="post-img" :class="{'post-img-one': item.img.length === 1,
                                                                     'post-img-more': item.img.length !== 1}">
-                        <img v-for="(img, imgindex) in item.img" :preview="index" :src="img" :key="imgindex" alt="">
+                        <img v-for="(img, imgindex) in item.img" :preview="index" :src="img" :key="imgindex" alt="pic">
                     </div>
                 </original-post>
             </div>
-
         </div>
         <!-- <tabbar></tabbar> -->
     </div>
@@ -47,21 +49,21 @@ export default {
             tEndHeight: null, // touch 结束点
             tMoveHeight: null, // touch 移动时的距离
             refreshText: "下拉刷新",
-            isRefresh: false
+            isRefresh: false,
+            reminder: 0,
         }
     },
 
     methods: {
         clickRoutetoPostDetail(item) {
             if (event.target.nodeName === "IMG" && event.target.getAttribute("preview")) {
-                console.log("阻止冒泡" + event.target.nodeName)
+                // console.log("阻止冒泡" + event.target.nodeName)
             } else {
-                console.log("跳转详情页" + event.currentTarget.nodeName)
-                console.log("originalpostid: " + item.originalpostid)
+                // console.log("跳转详情页" + event.currentTarget.nodeName)
+                // console.log("originalpostid: " + item.originalpostid)
                 this.$router.push({
                     name: "OriginalPostDetail",
                     query: {
-                        userid: item.userid,
                         originalpostid: item.originalpostid
                     }
                 })
@@ -69,12 +71,12 @@ export default {
         },
 
         cancelLike(originalpostid) {
-            console.log("tl父 cancelLike");
+            // console.log("tl父 cancelLike");
             this.$store.dispatch("cancelLike", originalpostid)
         },
 
         addLike(originalpostid) {
-            console.log("tl父 addLike")
+            // console.log("tl父 addLike")
             this.$store.dispatch("addLike", originalpostid)
         },
 
@@ -105,14 +107,14 @@ export default {
         },
 
         clickRoutetoMessage() {
+            this.reminder = 0;
             this.$router.push({
                 name: "Message",
-                
             })
         },
 
         handleTouchStart(event) {
-            console.log("touchstart")
+            // console.log("touchstart")
             this.tStartHeight = event.touches[0].pageY;
         },
 
@@ -122,13 +124,14 @@ export default {
             let scrollHeight = container.scrollTop;
 
             let refresh = this.$refs.refresh;
-            console.log(scrollHeight, this.tMoveHeight, this.tStartHeight);
+            // console.log(scrollHeight, this.tMoveHeight, this.tStartHeight);
 
 
             if (scrollHeight <= 0) {
                 if (0 <= this.tMoveHeight - this.tStartHeight && this.tMoveHeight - this.tStartHeight <= 50) {
                     event.preventDefault();
-                    refresh.style.top = this.tMoveHeight - this.tStartHeight + "px"
+                    this.refreshText = "下拉刷新";
+                    refresh.style.top = this.tMoveHeight - this.tStartHeight + "px";
                 } else if (50 < this.tMoveHeight - this.tStartHeight && this.tMoveHeight - this.tStartHeight <= 70) {
                     event.preventDefault();
                     this.refreshText = "释放刷新";
@@ -144,21 +147,21 @@ export default {
             let container = this.$refs.container;
             let scrollHeight = container.scrollTop;
             let refresh = this.$refs.refresh;
-            console.log("scrollheight" + scrollHeight)
+            // console.log("scrollheight" + scrollHeight)
             if (scrollHeight <= 0) {
                 if (this.tMoveHeight - this.tStartHeight < 50) {
                     refresh.style.top = 0;
-                    console.log("touchend");       
+                    // console.log("touchend");       
                 } else {
                     this.refreshText = "正在刷新";      
                     this.isRefresh = true; 
-                    this.$router.go(0);
                     setTimeout(() => {
+                        this.$router.go(0);
                         refresh.style.top = 0;
                         this.refreshText = "下拉刷新";
                         this.isRefresh = false; 
-                        console.log("touchend");       
-                    }, 800);
+                        // console.log("touchend");       
+                    }, 600);
                 }
             }
         }
@@ -170,22 +173,44 @@ export default {
     },
 
     created() {
-        console.log("tl created")
+        // console.log("tl created");
         this.userid = this.$store.state.userid;
-        this.$store.dispatch("requestTimelineData", this.userid)
+        this.$store.dispatch("requestTimelineData", this.userid);
     },
 
     mounted() {
         let container = this.$refs.container;
         let scrollDebounce = this.debounce(() => {
             this.$store.commit("updatetlscrollTop", container.scrollTop)
-            console.log(container.scrollTop)
-        }, 400)
-        container.addEventListener("scroll", scrollDebounce, false);        
+            // console.log(container.scrollTop)
+        }, 400);
+        container.addEventListener("scroll", scrollDebounce, false); 
+
+        axios({
+            method: "get",
+            url: "https://cloud-4gm4rigo8c5f1c23.service.tcloudbase.com/query_message",
+            params: {
+                userid: this.$store.state.userid // 登录者 id
+            }
+        }).then(res => {
+            // console.log(res.data);
+            // 未读的消息
+            let readList = [];
+            res.data.forEach(element => {
+                if (element.isread === false) {
+                    readList.push(element.originalpostid);
+                }
+            });
+
+            this.reminder = readList.length;
+            this.$store.commit("updateMessageData", {messageData: res.data, readList: readList});
+        }).catch(err => {
+            console.log(err);
+        })
     },
 
     activated() {
-        console.log("tl activated");
+        // console.log("tl activated");
         // console.log(this.$refs.container);
         if (this.$store.state.tlscrollTop) {
             let container = this.$refs.container;
@@ -212,12 +237,30 @@ export default {
         margin-top: 0.59375em;
     }
 
-    .navinfo-middle-icon {
+    .navinfo-reminder {
         position: absolute;
-        right: 3em;
+        right: -0.6em;
+        top: -0.3em;
         width: 1.5em;
         height: 1.5em;
-        margin-top: 0.59375em;        
+        line-height: 1.5em;
+        font-size: 1.2rem;
+        background-color: lightcoral;
+        border-radius:50%;
+        color: white;
+    }
+
+    .navinfo-middle-icon {
+        position: absolute;
+        right: 3.6em;
+        width: 1.5em;
+        height: 1.5em;
+        margin-top: 0.59375em;      
+        
+        img {
+            height: 100%;
+            width: 100%;
+        }
     }
 
     .refresh {

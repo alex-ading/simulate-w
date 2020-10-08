@@ -1,10 +1,10 @@
 <template>
     <div class="profile" ref="profile">
         <div v-if="$store.state.profileData!==null" class="profile-info-container">
-            <img class="profile-bg" :src="$store.state.profileData.info[0].headportrait" alt="">
+            <img class="profile-bg" :src="$store.state.profileData.info[0].headportrait" alt="background">
             <div class="profile-info">
                 <div class="profile-user-info">
-                    <img class="profile-head-portrait profile-user-info-item" :src="$store.state.profileData.info[0].headportrait">
+                    <img class="profile-head-portrait profile-user-info-item" :src="$store.state.profileData.info[0].headportrait" alt="head-portrait">
                     <div class="profile-user-info-item">
                         <p class="profile-user-name">{{$store.state.profileData.info[0].username}}</p>
                         <p class="profile-intro">{{$store.state.profileData.info[0].intro}}</p>
@@ -13,7 +13,7 @@
 
                 <div class="profile-data">
                     <div class="profile-post-num">
-                        <p>微博</p>
+                        <p>动态</p>
                         <p>{{$store.state.profileData.ops.length}}</p>
                     </div>
                     <div class="profile-following"  @click="clickRoutetoFollowings">
@@ -39,7 +39,7 @@
                                 >
                 <div v-if="item.img" slot="post-img" :class="{'post-img-one': item.img.length === 1,
                                                                     'post-img-more': item.img.length !== 1}">
-                    <img v-for="(img, imgindex) in item.img" :preview="index" :src="img" :key="imgindex" alt="">
+                    <img v-for="(img, imgindex) in item.img" :preview="index" :src="img" :key="imgindex" alt="pic">
                 </div>
             </original-post>
         </div>
@@ -71,7 +71,7 @@ export default {
                 for (let i of this.$store.state.profileData.followers) {
                     if (i.userid === this.$store.state.userid) {
                         this.isFollowed = true;
-                console.log(this.isFollowed)
+                // console.log(this.isFollowed)
 
                         return "已关注"
                     }
@@ -86,12 +86,11 @@ export default {
     methods: {
         clickRoutetoPostDetail(item) {
             if (event.target.nodeName !== "IMG") {
-                console.log("跳转详情页" + event.currentTarget.nodeName)
-                console.log("originalpostid: " + item.originalpostid)
+                // console.log("跳转详情页" + event.currentTarget.nodeName)
+                // console.log("originalpostid: " + item.originalpostid)
                 this.$router.push({
                     name: "OriginalPostDetail",
                     query: {
-                        userid: item.userid,
                         originalpostid: item.originalpostid
                     }
                 })
@@ -101,7 +100,7 @@ export default {
         },
 
         cancelLike(originalpostid) {
-            console.log("pf父 cancelLike");
+            // console.log("pf父 cancelLike");
 
             // 更改 profile 数据
             this.$store.dispatch("cancelLikeProfile", originalpostid);
@@ -111,7 +110,7 @@ export default {
         },
 
         addLike(originalpostid) {
-            console.log("pf父 addLike")
+            // console.log("pf父 addLike")
             let day = new Date();
             let time = day.getTime();
             this.$store.dispatch("addLikeProfile", {originalpostid: originalpostid, time: time});
@@ -163,7 +162,7 @@ export default {
             }).catch(err => {
                 console.log(err)
             })
-            console.log(this.isFollowed)
+            // console.log(this.isFollowed)
 
             // 改变vuex
             if (!this.isFollowed) {
@@ -181,7 +180,7 @@ export default {
     },
 
     created() {
-        console.log('profile created');
+        // console.log('profile created');
         this.profileid = this.$route.query.profileid;
         this.userid = this.$store.state.userid;
         // console.log(this.profileid);
@@ -197,8 +196,8 @@ export default {
     },
 
     activated() {
-        console.log('profile activated');
-        console.log(this.$route.query.profileid, this.profileid)
+        // console.log('profile activated');
+        // console.log(this.$route.query.profileid, this.profileid)
 
         if (this.$route.query.profileid === this.profileid) {
             if (this.$store.state.profilescrollTop) {
@@ -280,7 +279,7 @@ export default {
                 top: 2.3125em;
                 right: 2em;
                 transform: translateY(-50%);
-                font-size: 1.7rem;
+                // font-size: 1.7rem;
                 padding: 0.15em 0.55em;
                 border-radius: 1em;
             }
